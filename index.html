@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cat vs. Dogs! - JavaScript Game</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>Cat vs. Dogs! 🐈 vs 🐕</h1>
+            <p class="tagline">A Pac-Man style arcade game built with Vanilla JavaScript.</p>
+        </header>
+
+        <main>
+            <section id="intro">
+                <h2>Welcome!</h2>
+                <div class="development-notice">
+                    <p><strong>Development Notice:</strong> This game was created as a learning experiment to explore AI-assisted development. It was built through collaboration with Google's Gemini 2.5 Pro model, where I provided the design and requirements while the AI generated and refined the code. While fully playable, it serves primarily as a test project to demonstrate the capabilities and limitations of AI-assisted game development.</p>
+                </div>
+                <p>Experience a fun twist on the classic arcade game! Instead of Pac-Man, you're a crafty Cat (`🐈`) navigating a maze. Your goal? Eat all the delicious cat food (`🐾`) scattered throughout.</p>
+                <p>But watch out! A pack of determined Dogs (`🐕`, `🐩`, `🦮`, `🐕‍🦺`) are hot on your tail, acting as the ever-persistent ghosts.</p>
+            </section>
+
+            <section id="gameplay">
+                <h2>How to Play</h2>
+                <ul>
+                    <li><strong>Move:</strong> Use the <strong>Arrow Keys</strong> (↑ ↓ ← →) to guide the cat through the maze.</li>
+                    <li><strong>Objective:</strong> Eat all the small dots (`🐾`) on the screen to complete the level.</li>
+                    <li><strong>Avoid:</strong> Don't let the dogs catch you!</li>
+                    <li><strong>Power Up!:</strong> Grab the fish (`🐟`) to gain temporary power. While powered up, the dogs become vulnerable (`🦴`).</li>
+                    <li><strong>Turn the Tables:</strong> Catch vulnerable dogs to send them back to the central pound and score big bonus points!</li>
+                    <li><strong>Levels & Lives:</strong> Survive through 5 levels of increasing difficulty. You start with 5 lives. Lose them all, and it's game over!</li>
+                </ul>
+                 <div class="controls">
+                    <a href="cat_vs_dog_v2.html" class="button play-button">Play Now!</a>
+                </div>
+            </section>
+
+            <section id="screenshots">
+                <h2>Screenshots</h2>
+                <div class="screenshot-gallery">
+                    <div class="img-placeholder">
+                        <img src="assets/screenshot1.jpg" alt="Main menu">
+                        <span>Main menu</span>
+                    </div>
+                    <div class="img-placeholder">
+                         <img src="assets/screenshot2.jpg" alt="Level 1">
+                        <span>Level 1</span>
+                    </div>
+                    <div class="img-placeholder">
+                        <img src="assets/screenshot3.jpg" alt="Level 2">
+                        <span>Level 2</span>
+                    </div>
+                </div>
+            </section>
+
+             <section id="development">
+                <h2>Development Note</h2>
+                <p>This game was developed as a test/learning project through collaboration between myself and Google's Gemini 2.5 Pro model. The development process followed these steps:</p>
+                <ul>
+                    <li>I provided detailed specifications and requirements for the game mechanics, features, and design</li>
+                    <li>Gemini generated the initial code implementation</li>
+                    <li>Through iterative feedback and testing, we refined the code, fixed bugs, and added features</li>
+                    <li>Key improvements included implementing A* pathfinding for dog AI, proper collision detection, and screen wrapping</li>
+                </ul>
+                <p>This project demonstrates the potential of AI-assisted coding while serving as a learning exercise in game development.</p>
+            </section>
+
+            <section id="links">
+                 <h2>Links</h2>
+                 <div class="controls">
+                     <a href="cat_vs_dog_v2.html" class="button play-button-alt">Play Game</a>
+                     <a href="https://github.com/paulbarby/cat-vs-dogs" class="button github-button" target="_blank" rel="noopener noreferrer">View on GitHub</a>
+                 </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>© <span id="year"></span> Paul Barby - Cat vs. Dogs! A test project with AI assistance.</p>
+        </footer>
+    </div>
+
+    <script>
+        // Simple script to update the year dynamically
+        document.getElementById('year').textContent = new Date().getFullYear();
+    </script>
+
+</body>
+</html>
