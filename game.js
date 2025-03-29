@@ -521,7 +521,63 @@ document.addEventListener('DOMContentLoaded', () => {
     function resetPositionsAfterLifeLost() { /* ... unchanged ... */ cat.reset(); dogs.forEach(dog => dog.reset(false)); if (powerUpActive) { deactivatePowerUp(); } }
     function gameLoop(timestamp) { /* ... unchanged ... */ const delta = timestamp - lastTime; lastTime = timestamp; const dt = Math.min(delta, 50); if (gameState === 'PLAYING' || gameState === 'POWERUP') { update(dt); } if (gameState !== 'MENU') { draw(); } if (gameState !== 'GAME_OVER' && gameState !== 'WIN' && gameState !== 'MENU') { gameLoopId = requestAnimationFrame(gameLoop); } else { if (gameLoopId) cancelAnimationFrame(gameLoopId); gameLoopId = null; if (gameState === 'GAME_OVER' || gameState === 'WIN') { draw(); } } }
     function update(deltaTime) { /* ... unchanged ... */ cat.move(deltaTime); dogs.forEach(dog => dog.move(deltaTime)); checkCollisions(); checkFoodEaten(); checkPowerUpTimer(); if (foodRemaining <= 0) { goToNextLevel(); } }
-    function draw() { /* ... unchanged ... */ ctx.clearRect(0, 0, canvas.width, canvas.height); ctx.fillStyle = '#000'; ctx.fillRect(0, 0, canvas.width, canvas.height); ctx.font = `${FONT_SIZE}px Arial`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; for (let y = 0; y < maze.length; y++) { for (let x = 0; x < maze[y].length; x++) { const tile = maze[y][x]; const dX = x * TILE_SIZE + TILE_SIZE / 2; const dY = y * TILE_SIZE + TILE_SIZE / 2; if (tile === WALL) ctx.fillText(WALL_EMOJI, dX, dY); else if (tile === CAT_FOOD) { ctx.beginPath(); ctx.arc(dX, dY, TILE_SIZE * 0.15, 0, Math.PI * 2); ctx.fillStyle = 'orange'; ctx.fill(); } else if (tile === POWER_UP) ctx.fillText(POWER_UP_EMOJI, dX, dY); } } dogs.forEach(dog => dog.draw(ctx)); cat.draw(ctx); }
+    
+        // --- Drawing Function ---
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#000'; // Ensure background is black
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+            // Set default font style for the frame (used for most elements)
+            const standardFont = `${FONT_SIZE}px Arial`;
+            ctx.font = standardFont;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+    
+            // Assume WALL_EMOJI and POWER_UP_EMOJI are defined globally/in scope
+            // const WALL_EMOJI = '🧱';
+            // const POWER_UP_EMOJI = '🐟';
+    
+            for (let y = 0; y < maze.length; y++) {
+                for (let x = 0; x < maze[y].length; x++) {
+                    const tile = maze[y][x];
+                    const dX = x * TILE_SIZE + TILE_SIZE / 2; // Center X for text/emoji rendering
+                    const dY = y * TILE_SIZE + TILE_SIZE / 2; // Center Y for text/emoji rendering
+    
+                    if (tile === WALL) {
+                        // --- Start Inlined Change ---
+                        const originalFont = ctx.font; // Store the current font setting
+                        // Attempt to set a font stack prioritizing known emoji fonts
+                        ctx.font = `${FONT_SIZE}px "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", sans-serif`;
+    
+                        // Draw the wall emoji using the (hopefully) overridden font
+                        ctx.fillText(WALL_EMOJI, dX, dY);
+    
+                        // Restore the original font setting for other elements
+                        ctx.font = originalFont;
+                        // --- End Inlined Change ---
+    
+                    } else if (tile === CAT_FOOD) {
+                        // Draw food as a dot
+                        ctx.beginPath();
+                        ctx.arc(dX, dY, TILE_SIZE * 0.15, 0, Math.PI * 2);
+                        ctx.fillStyle = 'orange';
+                        ctx.fill();
+                    } else if (tile === POWER_UP) {
+                        // Draw power-up emoji (will use the standardFont set before loop)
+                        ctx.fillText(POWER_UP_EMOJI, dX, dY);
+                    }
+                    // Other tile types (PATH, SPAWN, etc.) are not drawn visually here
+                }
+            }
+    
+            // Ensure font is standard before drawing entities (might be redundant if reset correctly, but safe)
+             ctx.font = standardFont;
+    
+            // Draw Entities
+            dogs.forEach(dog => dog.draw(ctx));
+            cat.draw(ctx);
+        }
 
     // --- Collision & Interaction Logic ---
     function checkCollisions() { /* ... unchanged - HS check already moved */ const cX=cat.x+TILE_SIZE/2; const cY=cat.y+TILE_SIZE/2; dogs.forEach(dog=>{ if(dog.state==='returning'||dog.state==='respawning')return; const dX=dog.x+TILE_SIZE/2; const dY=dog.y+TILE_SIZE/2; const dx=cX-dX; const dy=cY-dY; const dist=Math.sqrt(dx*dx+dy*dy); const th=TILE_SIZE*0.65; if(dist<th){ if(dog.state==='vulnerable'){ score+=currentDogPoints; if(score>highScore)updateHighScore(); dog.sendToPound(); currentDogPoints*=2; updateUI();} else if(dog.state==='normal'){ if(gameState!=='CAUGHT'){ gameState='CAUGHT'; handleCaught();}} } }); }
