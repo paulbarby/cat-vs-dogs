@@ -19,7 +19,7 @@ The editor runs entirely in the browser using vanilla HTML, CSS, and JavaScript.
   - 🐕 Dog Spawn (5)
   - 🦴 Pound Area (6)
   - (Empty/Path) (0)
-- **Preloaded Maps:** Comes with several pre-designed maps (loaded from `maps.js`) to use as starting points or modify.
+- **Preloaded Maps:** Comes with the five default game maps to use as starting points or modify.
 - **Map Selection:** Easily switch between different maps using a dropdown menu.
 - **Export Functionality:** Generates the maze data as a correctly formatted JavaScript 2D array string, ready to be copied and pasted directly into the `mazes` array in your `game.js` file.
 - **Clear Grid:** Quickly reset the current map grid to empty paths.
@@ -29,11 +29,11 @@ The editor runs entirely in the browser using vanilla HTML, CSS, and JavaScript.
 
 - **HTML:** (`editor.html`) Structure of the editor page.
 - **CSS:** (`editor.style.css`) Basic styling for layout and appearance.
-- **Vanilla JavaScript:** (`editor.js`, `maps.js`) All client-side logic, grid manipulation, data handling, and map data storage.
+- **Vanilla JavaScript:** (`editor.js`) All client-side logic, grid manipulation, and data handling.
 
 ## How to Use
 
-1.  **Clone or Download:** Get the project files (`editor.html`, `editor.style.css`, `editor.js`, `maps.js`).
+1.  **Clone or Download:** Get the project files (`editor.html`, `editor.style.css`, `editor.js`).
 2.  **Open:** Launch the `editor.html` file in a modern web browser.
 3.  **Select Map:** Choose a base map to edit from the "Load Map" dropdown.
 4.  **Select Tile:** Click on a tile in the "Palette" section to select your brush.

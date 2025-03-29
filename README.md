@@ -1,6 +1,3 @@
-<<<<<<< HEAD
-# cat-vs-dogs
-=======
 # Cat vs. Dogs! - A JavaScript Pac-Man Style Game
 
 This repository contains the source code for "Cat vs. Dogs!", a browser-based game built entirely with HTML, CSS, and vanilla JavaScript using the HTML5 Canvas API.
@@ -15,6 +12,13 @@ The game is a fun twist on the classic Pac-Man formula:
 - Eating a fish power-up (`🐟`) makes the dogs vulnerable (`🦴`), allowing you to catch them and send them back to the central pound for bonus points.
 - The game features 5 levels with increasing dog speed and progressively complex mazes (though you might need to define unique maze layouts for levels 3-5 in `game.js`!).
 - It keeps track of your score, lives, and saves the high score locally.
+
+## How to Play
+
+1. Download or clone this repository to your local machine
+2. Navigate to the downloaded folder
+3. Open the `cat_vs_dog_v2.html` file in your web browser
+4. Click "Start Game" and use the arrow keys to control the cat!
 
 ## The Development Process: A Collaboration with Gemini
 
@@ -61,4 +65,3 @@ This game wasn't built entirely by hand in the traditional sense. It was develop
 Throughout this project, **I acted as the designer, director, and primary tester**, providing the initial vision, detailed specifications, and crucial feedback on bugs and desired features. **Gemini 2.5 Pro served as the primary coder**, translating my requests into functional JavaScript, refactoring code based on feedback, and implementing complex algorithms like A\*. This iterative cycle of **prompt -> code -> test -> feedback -> refinement** was essential in building the game.
 
 Feel free to explore the code, play the game, and maybe even design your own mazes using the array format in `game.js`!
->>>>>>> 87a208c (Updated readmes)
