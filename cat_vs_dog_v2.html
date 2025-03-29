@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cat vs. Dogs!</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="game-container">
+        <h1>Cat vs. Dogs! 🐈 vs 🐕</h1>
+
+        <div class="ui">
+            <div>Level: <span id="level">1</span></div>
+            <div>Score: <span id="score">0</span></div>
+            <div>Lives: <span id="lives">💖💖💖💖💖</span></div>
+            <div>High Score: <span id="high-score">0</span></div>
+            <button id="exitButton" style="display: none;">Exit to Menu</button>
+        </div>
+
+        <canvas id="gameCanvas"></canvas>
+
+        <div id="menu" class="overlay">
+            <h2>Cat vs. Dogs!</h2>
+            <p>Eat all the 🐾 (dots), avoid the dogs!</p>
+            <p>Use Arrow Keys to move.</p>
+            <p>Eat 🐟 to turn dogs vulnerable 🦴!</p>
+            <p>High Score: <span id="menu-high-score">0</span></p>
+            <!-- Sound Toggle Added -->
+            <div class="sound-toggle-container">
+                <label for="soundToggle">Sound:</label>
+                <input type="checkbox" id="soundToggle" checked>
+            </div>
+            <button id="startButton">Start Game</button>
+        </div>
+
+        <div id="gameOver" class="overlay" style="display: none;">
+            <h2>Game Over!</h2>
+            <p>Final Score: <span id="final-score-gameover">0</span></p>
+            <p>High Score: <span id="high-score-gameover">0</span></p>
+            <button id="restartButtonGameOver">Restart Game</button>
+        </div>
+
+         <div id="levelTransition" class="overlay" style="display: none;">
+            <h2>Level <span id="transition-level">1</span> Cleared!</h2>
+            <p>Get Ready!</p>
+        </div>
+
+        <div id="winScreen" class="overlay" style="display: none;">
+            <h2>You Win! 🏆</h2>
+            <p>Final Score: <span id="final-score-win">0</span></p>
+            <p>High Score: <span id="high-score-win">0</span></p>
+            <button id="playAgainButton">Play Again?</button>
+        </div>
+    </div>
+
+    <script src="game.js"></script>
+</body>
+</html>
