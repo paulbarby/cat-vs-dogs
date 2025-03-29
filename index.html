@@ -5,6 +5,33 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cat vs. Dogs! - JavaScript Game</title>
     <link rel="stylesheet" href="style.css">
+    <script>
+        // Mobile detection function
+        function isMobileDevice() {
+            return (typeof window.orientation !== "undefined") 
+                || (navigator.userAgent.indexOf('IEMobile') !== -1)
+                || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        }
+
+        // Function to get appropriate game URL
+        function getGameUrl() {
+            return isMobileDevice() ? 'mobile.html' : 'cat_vs_dog_v2.html';
+        }
+
+        // Function to handle play button clicks
+        function handlePlayClick(event) {
+            event.preventDefault();
+            window.location.href = getGameUrl();
+        }
+
+        // Add click handlers when document loads
+        document.addEventListener('DOMContentLoaded', () => {
+            const playButtons = document.querySelectorAll('.play-button, .play-button-alt');
+            playButtons.forEach(button => {
+                button.addEventListener('click', handlePlayClick);
+            });
+        });
+    </script>
 </head>
 <body>
 
@@ -35,7 +62,7 @@
                     <li><strong>Levels & Lives:</strong> Survive through 5 levels of increasing difficulty. You start with 5 lives. Lose them all, and it's game over!</li>
                 </ul>
                  <div class="controls">
-                    <a href="cat_vs_dog_v2.html" class="button play-button">Play Now!</a>
+                    <a href="#" class="button play-button">Play Now!</a>
                 </div>
             </section>
 
@@ -72,7 +99,7 @@
             <section id="links">
                  <h2>Links</h2>
                  <div class="controls">
-                     <a href="cat_vs_dog_v2.html" class="button play-button-alt">Play Game</a>
+                     <a href="#" class="button play-button-alt">Play Game</a>
                      <a href="https://github.com/paulbarby/cat-vs-dogs" class="button github-button" target="_blank" rel="noopener noreferrer">View on GitHub</a>
                  </div>
             </section>

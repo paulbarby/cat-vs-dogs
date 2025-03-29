@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!-- Optimized for mobile: responsive, no zooming -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Cat vs. Dogs! (Mobile)</title>
+    <link rel="stylesheet" href="mobile.style.css">
+    <!-- Basic PWA / Add to homescreen hints (Optional) -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <style>
+        /* Critical styles to prevent bounce/scroll */
+        html, body {
+            width: 100%; height: 100%; overflow: hidden; margin: 0; padding: 0;
+            overscroll-behavior-y: contain; /* Prevent pull-to-refresh */
+            background-color: #000; /* Default background */
+            color: #eee;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+        /* Ensure wrapper takes full screen */
+         #game-wrapper {
+            width: 100%; height: 100%; display: flex; flex-direction: column;
+            justify-content: center; align-items: center; background-color: #000;
+         }
+    </style>
+</head>
+<body>
+    <div id="game-wrapper">
+        <div class="game-container">
+            <!-- Title can be smaller or removed -->
+            <!-- <h1>Cat vs. Dogs! 🐈 vs 🐕</h1> -->
+
+            <div class="ui">
+                <div>L:<span id="level">1</span></div>
+                <div>S:<span id="score">0</span></div>
+                <div><span id="lives">💖💖💖💖💖</span></div>
+                <div>HS:<span id="high-score">0</span></div>
+                <!-- Exit button can be smaller -->
+                <button id="exitButton" style="display: none;">X</button>
+            </div>
+
+            <canvas id="gameCanvas"></canvas>
+
+            <!-- Mobile Controls (Handled by JS visibility) -->
+            <div id="mobileControls" style="display: none;">
+                <button id="btnUp" class="arrow-btn">▲</button>
+                <button id="btnLeft" class="arrow-btn">◄</button>
+                <button id="btnDown" class="arrow-btn">▼</button>
+                <button id="btnRight" class="arrow-btn">►</button>
+            </div>
+
+            <!-- Overlays (Remain inside game-container) -->
+            <div id="menu" class="overlay">
+                 <h2>Cat vs. Dogs!</h2>
+                 <p>Eat 🐾, Avoid 🐕!</p>
+                 <p>Use Screen Controls</p>
+                 <p>High Score: <span id="menu-high-score">0</span></p>
+                 <div class="sound-toggle-container">
+                     <label for="soundToggle">Sound:</label>
+                     <input type="checkbox" id="soundToggle" checked>
+                 </div>
+                 <button id="startButton">Tap to Start</button>
+             </div>
+             <div id="gameOver" class="overlay" style="display: none;">
+                <h2>Game Over!</h2>
+                <p>Score: <span id="final-score-gameover">0</span></p>
+                <p>High: <span id="high-score-gameover">0</span></p>
+                <button id="restartButtonGameOver">Menu</button>
+             </div>
+             <div id="levelTransition" class="overlay" style="display: none;">
+                <h2>Level <span id="transition-level">1</span> Clear!</h2>
+             </div>
+             <div id="winScreen" class="overlay" style="display: none;">
+                <h2>You Win! 🏆</h2>
+                <p>Score: <span id="final-score-win">0</span></p>
+                <p>High: <span id="high-score-win">0</span></p>
+                <button id="playAgainButton">Menu</button>
+             </div>
+
+        </div> <!-- End .game-container -->
+    </div> <!-- End #game-wrapper -->
+
+    <script src="mobile.game.js"></script>
+</body>
+</html>

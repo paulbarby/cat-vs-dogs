@@ -1,36 +1,68 @@
+/* General Reset & Body */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+
+html, body {
+    width: 100%;
+    height: 100%; /* Use 100% */
+    overflow: hidden; /* Prevent scrollbars */
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: #eee;
+    background-color: #222; /* Background for the whole page */
+}
+
+
+/* Make body the main flex container */
 body {
     display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    background-color: #222;
-    color: #eee;
-    font-family: sans-serif;
-    margin: 0;
+    justify-content: center; /* Center game vertically */
+    align-items: center;   /* Center game horizontally */
 }
 
 .game-container {
     text-align: center;
-    border: 2px solid #555;
-    padding: 20px;
     background-color: #333;
     border-radius: 10px;
     position: relative; /* Needed for overlay positioning */
+    display: flex; /* Use flex for internal layout */
+    flex-direction: column; /* Stack UI and Canvas */
+    align-items: center; /* Center items like title, canvas */
+    padding: 15px; /* Adjust padding as needed */
+    border: 1px solid #555; /* Optional border */
+    width: auto; /* Let content define width */
+    max-width: 95%; /* Prevent it getting too wide */
+    /* No fixed height - let content size it */
+    flex-shrink: 0; /* Prevent shrinking if window is very short */
+    transform: scale(1.5);
 }
 
 h1 {
     color: orange;
+    font-size: 1.8em; /* Adjust size as needed */
+    margin-bottom: 10px;
 }
 
 .ui {
     display: flex;
+    flex-wrap: wrap; /* Allow wrapping if needed */
     justify-content: space-around;
-    align-items: center; /* Vertically center items */
-    margin-bottom: 15px;
+    align-items: center;
+    margin-bottom: 10px;
     font-size: 1.1em;
-    padding: 5px 10px; /* Adjust padding */
+    padding: 5px 10px;
     background-color: #444;
     border-radius: 5px;
+    width: 100%; /* Take full width of container */
+    max-width: 600px; /* Optional max width for UI */
+}
+.ui > div {
+    margin: 2px 5px; /* Spacing between UI elements */
 }
 
 
@@ -39,90 +71,47 @@ h1 {
     letter-spacing: 2px; /* Space out hearts */
 }
 
+/* Exit Button (if used in desktop UI) */
+#exitButton {
+    padding: 2px 8px; font-size: 0.8em; cursor: pointer; background-color: #888;
+    border: none; border-radius: 3px; color: #eee; margin-left: 10px;
+    vertical-align: middle; margin-top: 0;
+}
+#exitButton:hover { background-color: #a33; }
+
 #gameCanvas {
     border: 1px solid #666;
-    background-color: #000; /* Black background for the maze */
-    display: block; /* Prevent extra space below canvas */
-    margin: 0 auto; /* Center canvas if container is wider */
+    background-color: #000;
+    display: block; /* Remove extra space */
+    /* Let JS set width/height based on maze */
+    /* Add max-width/max-height to prevent exceeding container/viewport */
+    max-width: 100%;
+    /* Calculate max height based on viewport minus approximate UI/padding */
+    max-height: calc(100vh - 150px); /* Adjust 150px based on your UI height */
+    object-fit: contain; /* Scale down if needed, maintains aspect ratio */
+    image-rendering: pixelated; /* Keep pixels sharp if scaled */
+    image-rendering: crisp-edges;
 }
 
 .overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
     background-color: rgba(0, 0, 0, 0.85);
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    color: white;
-    border-radius: 10px; /* Match container */
+    /* display: flex; */ /* JS handles display */
+    flex-direction: column; justify-content: center; align-items: center;
+    color: white; border-radius: 10px; /* Match container */
+    padding: 20px;
+    z-index: 100; /* Ensure overlays are on top */
 }
 
-.overlay h2 {
-    color: orange;
-    margin-bottom: 20px;
+.overlay h2 { color: orange; margin-bottom: 20px; }
+.overlay p { margin: 10px 0; font-size: 1.1em; }
+.overlay button { padding: 10px 20px; font-size: 1.1em; cursor: pointer; background-color: #ff9900; border: none; border-radius: 5px; color: #333; margin-top: 20px; font-weight: bold; }
+.overlay button:hover { background-color: #ffad33; }
+.sound-toggle-container { margin-top: 15px; font-size: 0.9em; }
+#soundToggle { width: 16px; height: 16px; accent-color: orange; }
+
+#mobileControls {
+    display: none !important; /* Force hiding */
 }
 
-.overlay p {
-    margin: 10px 0;
-    font-size: 1.1em;
-}
 
-button { /* Default button styling */
-    padding: 10px 20px;
-    font-size: 1.1em;
-    cursor: pointer;
-    background-color: #ff9900;
-    border: none;
-    border-radius: 5px;
-    color: #333;
-    margin-top: 20px;
-    font-weight: bold;
-}
-
-button:hover {
-    background-color: #ffad33;
-}
-
-/* Exit Button Specific Styling */
-#exitButton {
-    padding: 2px 8px; /* Smaller padding */
-    font-size: 0.8em; /* Smaller font */
-    cursor: pointer;
-    background-color: #888;
-    border: none;
-    border-radius: 3px;
-    color: #eee;
-    margin-left: 10px; /* Space it from other UI elements */
-    vertical-align: middle; /* Align with text */
-    margin-top: 0; /* Override default margin */
-}
-
-#exitButton:hover {
-    background-color: #a33; /* Reddish on hover */
-}
-
-/* Sound Toggle Styling */
-.sound-toggle-container {
-    margin-top: 15px;
-    font-size: 0.9em;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #ccc;
-}
-
-.sound-toggle-container label {
-    margin-right: 8px;
-}
-
-#soundToggle {
-    width: 16px; /* Adjust size */
-    height: 16px;
-    cursor: pointer;
-    /* Basic styling - you might need more for cross-browser consistency */
-    accent-color: orange; /* Color the checkmark */
-}

@@ -1,0 +1,157 @@
+/* Basic Reset for Mobile */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    -webkit-user-select: none; user-select: none; /* Prevent text selection */
+    touch-action: manipulation; /* Improve touch responsiveness */
+    -webkit-tap-highlight-color: transparent; /* Remove tap highlight */
+}
+
+/* Body handled by inline style in HTML for priority */
+
+/* Game Wrapper - Flex container for game area + controls */
+#game-wrapper {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around; /* Distribute space */
+    align-items: center;
+    background-color: #000; /* Black background */
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); /* Notch support */
+}
+
+.game-container {
+    text-align: center;
+    background-color: #222; /* Darker bg for container */
+    border-radius: 8px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%; /* Take full width */
+    flex-shrink: 1; /* Allow container to shrink if needed */
+    flex-grow: 0; /* Don't grow excessively */
+    max-width: 95vw; /* Limit width slightly */
+    padding: 5px;
+    margin-bottom: 5px; /* Small space before controls */
+}
+
+/* UI on Mobile */
+.ui {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    align-items: center;
+    margin-bottom: 5px;
+    font-size: clamp(10px, 3vw, 14px); /* Responsive font size */
+    padding: 3px 5px;
+    background-color: #444;
+    border-radius: 5px;
+    width: 100%;
+    color: #eee;
+}
+.ui > div {
+    margin: 1px 4px;
+    white-space: nowrap; /* Prevent wrapping within items */
+}
+#lives { color: pink; letter-spacing: 1px; }
+
+/* Exit Button - Smaller */
+#exitButton {
+    padding: 1px 6px;
+    font-size: 0.8em;
+    background-color: #777;
+    color: #eee;
+    border: none; border-radius: 3px; cursor: pointer;
+    margin-left: auto; /* Push to right */
+    margin-right: 5px;
+}
+#exitButton:active { background-color: #999; transform: scale(0.95); }
+
+
+/* Canvas - Primary view area */
+#gameCanvas {
+    border: 1px solid #555;
+    background-color: #000;
+    display: block;
+    width: 100%; /* Fit container width */
+    max-width: 100%;
+    height: auto; /* Maintain aspect ratio */
+    /* Limit height to ensure controls fit */
+    max-height: calc(100vh - 200px); /* Adjust 200px based on control height/margins */
+    object-fit: contain; /* Scale down if needed */
+    image-rendering: pixelated; /* Keep pixels sharp */
+    image-rendering: crisp-edges;
+}
+
+/* Overlays - Adapt size */
+.overlay {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background-color: rgba(0, 0, 0, 0.85); display: none; /* Hidden by default */
+    flex-direction: column; justify-content: center; align-items: center;
+    color: white; border-radius: 8px; z-index: 100; /* Ensure on top */
+    padding: 15px; text-align: center;
+}
+.overlay h2 { color: orange; font-size: 1.5em; margin-bottom: 15px; }
+.overlay p { font-size: 1em; margin: 8px 0; }
+.overlay button { padding: 10px 20px; font-size: 1em; margin-top: 15px; }
+.sound-toggle-container { margin-top: 10px; font-size: 0.9em; }
+#soundToggle { width: 18px; height: 18px; accent-color: orange; }
+
+
+/* Mobile Controls - Placed below game container */
+#mobileControls {
+    width: 100%;
+    max-width: 280px; /* Control area width */
+    margin: 0 auto; /* Center horizontally */
+    padding: 5px;
+    display: none; /* Hidden by default, shown by JS */
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    gap: 8px;
+    justify-items: center;
+    align-items: center;
+    flex-shrink: 0; /* Prevent controls from shrinking */
+}
+
+.arrow-btn {
+    width: clamp(55px, 18vw, 70px); /* Responsive button size */
+    height: clamp(55px, 18vw, 70px);
+    font-size: clamp(1.8em, 6vw, 2.5em); /* Responsive arrow size */
+    border: 1px solid #bbb;
+    border-radius: 50%;
+    background-color: rgba(90, 90, 90, 0.6);
+    color: #eee;
+    cursor: pointer; /* For desktop testing */
+    display: flex; justify-content: center; align-items: center;
+    margin: 0; padding: 0;
+    transition: background-color 0.1s ease;
+}
+
+.arrow-btn:active {
+    background-color: rgba(130, 130, 130, 0.7);
+    /* No transform needed, direct feedback is better on touch */
+}
+
+/* Grid positioning */
+#btnUp { grid-area: 1 / 2 / 2 / 3; }
+#btnLeft { grid-area: 2 / 1 / 3 / 2; }
+#btnDown { grid-area: 3 / 2 / 4 / 3; }
+#btnRight { grid-area: 2 / 3 / 3 / 4; }
+
+/* Basic Fullscreen adjustments (might not be strictly needed if wrapper handles it) */
+#game-wrapper:fullscreen {
+    justify-content: space-between; /* Push controls down */
+}
+#game-wrapper:fullscreen #gameCanvas {
+    max-height: none; /* Allow canvas to fill more space */
+}
+#game-wrapper:fullscreen #mobileControls {
+    margin-bottom: max(15px, env(safe-area-inset-bottom)); /* Ensure space from bottom edge / notch */
+}
+/* Add vendor prefixes if needed */
+#game-wrapper:-webkit-full-screen { justify-content: space-between; }
+#game-wrapper:-webkit-full-screen #gameCanvas { max-height: none; }
+#game-wrapper:-webkit-full-screen #mobileControls { margin-bottom: max(15px, env(safe-area-inset-bottom)); }

@@ -1,8 +1,8 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // Setup references to elements...
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
-
-    // UI Elements
+    const gameWrapper = document.getElementById('game-wrapper');
     const levelDisplay = document.getElementById('level');
     const scoreDisplay = document.getElementById('score');
     const livesDisplay = document.getElementById('lives');
@@ -13,46 +13,28 @@ document.addEventListener('DOMContentLoaded', () => {
     const finalScoreWinDisplay = document.getElementById('final-score-win');
     const highScoreWinDisplay = document.getElementById('high-score-win');
     const transitionLevelDisplay = document.getElementById('transition-level');
-    const soundToggle = document.getElementById('soundToggle'); // Sound Toggle Checkbox
-
-    // Overlays
+    const soundToggle = document.getElementById('soundToggle');
     const menuOverlay = document.getElementById('menu');
     const gameOverOverlay = document.getElementById('gameOver');
     const levelTransitionOverlay = document.getElementById('levelTransition');
     const winScreenOverlay = document.getElementById('winScreen');
-
-    // Buttons
     const startButton = document.getElementById('startButton');
     const restartButtonGameOver = document.getElementById('restartButtonGameOver');
     const playAgainButton = document.getElementById('playAgainButton');
     const exitButton = document.getElementById('exitButton');
+    const mobileControlsContainer = document.getElementById('mobileControls');
+    const btnUp = document.getElementById('btnUp');
+    const btnLeft = document.getElementById('btnLeft');
+    const btnDown = document.getElementById('btnDown');
+    const btnRight = document.getElementById('btnRight');
 
-    // --- Sound State ---
-    let isSoundEnabled = localStorage.getItem('catVsDogsSoundEnabled') !== 'false'; // Default to true
+    // --- Sound State & Setup ---
+    let isSoundEnabled = localStorage.getItem('catVsDogsSoundEnabled') !== 'false';
     let audioCtx = null;
-    soundToggle.checked = isSoundEnabled; // Set checkbox state on load
+    soundToggle.checked = isSoundEnabled;
+    function playSound(freq, type = 'sine', dur = 0.1) { /* ... unchanged ... */ if (!isSoundEnabled || !audioCtx) return; try { const o = audioCtx.createOscillator(); const g = audioCtx.createGain(); o.type = type; o.frequency.setValueAtTime(freq, audioCtx.currentTime); g.gain.setValueAtTime(0.5, audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur); o.connect(g); g.connect(audioCtx.destination); o.start(audioCtx.currentTime); o.stop(audioCtx.currentTime + dur); } catch (e) { console.error("Sound error:", e); audioCtx = null; } }
 
-    // --- Web Audio API Setup ---
-    function playSound(frequency, type = 'sine', duration = 0.1) {
-        // *** CHECK SOUND ENABLED ***
-        if (!isSoundEnabled || !audioCtx) return;
-        try {
-            const oscillator = audioCtx.createOscillator();
-            const gainNode = audioCtx.createGain();
-            oscillator.type = type;
-            oscillator.frequency.setValueAtTime(frequency, audioCtx.currentTime);
-            gainNode.gain.setValueAtTime(0.5, audioCtx.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
-            oscillator.connect(gainNode);
-            gainNode.connect(audioCtx.destination);
-            oscillator.start(audioCtx.currentTime);
-            oscillator.stop(audioCtx.currentTime + duration);
-        } catch (error) {
-            console.error("Error playing sound:", error);
-            audioCtx = null; // Possibly disable audio if context broken
-        }
-    }
-
+    // --- Game Constants & Variables ---
     // --- Game Constants ---
     const TILE_SIZE = 24; const FONT_SIZE = TILE_SIZE * 0.8;
     const PATH = 0; const WALL = 1; const CAT_FOOD = 2; const POWER_UP = 3; const CAT_START = 4; const DOG_SPAWN = 5; const EMPTY_POUND = 6;
@@ -501,114 +483,191 @@ document.addEventListener('DOMContentLoaded', () => {
         sendToPound() { /* ... unchanged ... */ this.state = 'returning'; this.speed = DOG_RETURN_SPEED; this.emoji = RETURNING_DOG_EMOJI; this.path = []; this.clearPathRecalculateTimer(); this.recalculatePath(); if (this.aiTimer) clearTimeout(this.aiTimer); this.aiTimer = null; if (this.respawnTimer) clearTimeout(this.respawnTimer); this.respawnTimer = null; playSound(300, 'square', 0.2); }
         reset(isLevelStart = false) { /* ... unchanged ... */ super.reset(); this.speed = dogSpeed; /* emoji set by super.reset() */ this.state = 'normal'; this.aiMode = 'scatter'; this.scatterTarget = this.getRandomCorner(); this.path = []; this.isStuck = false; this.clearPathRecalculateTimer(); if (this.aiTimer) clearTimeout(this.aiTimer); this.aiTimer = null; this.pathRecalculateInterval = Math.max(2000, 10000 * Math.pow(0.9, currentLevelIndex)); if (isLevelStart) { setTimeout(() => { if (this.state === 'normal') { this.recalculatePath(); this.startPathRecalculateTimer(); this.switchAiMode(); } }, 500 + Math.random() * 500); } else { this.recalculatePath(); this.startPathRecalculateTimer(); this.switchAiMode(); } }
     }
-
-    // --- Game Initialization ---
-    function initGame() { /* ... unchanged ... */ currentLevelIndex = 0; score = 0; lives = STARTING_LIVES; highScore = parseInt(localStorage.getItem('catVsDogsHighScore') || '0'); updateUI(); gameState = 'MENU'; showMenu(); }
-
-    // --- Level Loading ---
-    function loadLevel(levelIndex) {
-        maze = mazes[levelIndex].map(row => [...row]); canvas.width = maze[0].length * TILE_SIZE; canvas.height = maze.length * TILE_SIZE; ctx.imageSmoothingEnabled = false;
-        foodRemaining = 0; dogs = []; let catStartX = 0, catStartY = 0; const dogSpawnPoints = [];
-        for (let y = 0; y < maze.length; y++) { for (let x = 0; x < maze[y].length; x++) { if (maze[y][x] === CAT_START) { catStartX = x; catStartY = y; maze[y][x] = PATH; } else if (maze[y][x] === DOG_SPAWN) { dogSpawnPoints.push({ gridX: x, gridY: y }); } else if (maze[y][x] === CAT_FOOD) { foodRemaining++; } } }
-        const speedPercentage = 0.25 + (levelIndex * 0.05); dogBaseSpeed = (CAT_BASE_SPEED / 0.7) * speedPercentage; dogSpeed = dogBaseSpeed;
-        cat = new Cat(catStartX, catStartY); cat.speed = catSpeed;
-        // *** Create dogs with unique indices for emojis ***
-        dogs = dogSpawnPoints.map((pos, i) => new Dog(pos.gridX, pos.gridY, dogSpeed, i));
-        cat.reset(); dogs.forEach(dog => dog.reset(true));
-        powerUpActive = false; if (powerUpTimer) clearTimeout(powerUpTimer); powerUpTimer = null; vulnerableEndTime = 0; currentDogPoints = POINTS_DOG_BASE; updateUI();
+    // --- Fullscreen Function ---
+    function requestGameFullscreen() {
+        // No mobile check needed here, always try on mobile version
+        const element = gameWrapper;
+        if (element.requestFullscreen) { element.requestFullscreen().catch(err => { console.warn(`FS Error: ${err.message}`); }); }
+        else if (element.webkitRequestFullscreen) { element.webkitRequestFullscreen().catch(err => { console.warn(`FS Error: ${err.message}`); }); }
+        else if (element.msRequestFullscreen) { element.msRequestFullscreen().catch(err => { console.warn(`FS Error: ${err.message}`); }); }
     }
 
-    function resetPositionsAfterLifeLost() { /* ... unchanged ... */ cat.reset(); dogs.forEach(dog => dog.reset(false)); if (powerUpActive) { deactivatePowerUp(); } }
-    function gameLoop(timestamp) { /* ... unchanged ... */ const delta = timestamp - lastTime; lastTime = timestamp; const dt = Math.min(delta, 50); if (gameState === 'PLAYING' || gameState === 'POWERUP') { update(dt); } if (gameState !== 'MENU') { draw(); } if (gameState !== 'GAME_OVER' && gameState !== 'WIN' && gameState !== 'MENU') { gameLoopId = requestAnimationFrame(gameLoop); } else { if (gameLoopId) cancelAnimationFrame(gameLoopId); gameLoopId = null; if (gameState === 'GAME_OVER' || gameState === 'WIN') { draw(); } } }
-    function update(deltaTime) { /* ... unchanged ... */ cat.move(deltaTime); dogs.forEach(dog => dog.move(deltaTime)); checkCollisions(); checkFoodEaten(); checkPowerUpTimer(); if (foodRemaining <= 0) { goToNextLevel(); } }
-    
-        // --- Drawing Function ---
-    function draw() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = '#000'; // Ensure background is black
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
+   // --- Game Initialization ---
+   function initGame() { /* ... unchanged ... */ currentLevelIndex = 0; score = 0; lives = STARTING_LIVES; highScore = parseInt(localStorage.getItem('catVsDogsHighScore') || '0'); updateUI(); gameState = 'MENU'; showMenu(); }
 
-        // Set default font style for the frame (used for most elements)
-        const standardFont = `${FONT_SIZE}px Arial`;
+   // --- Level Loading ---
+   function loadLevel(levelIndex) {
+       maze = mazes[levelIndex].map(row => [...row]); canvas.width = maze[0].length * TILE_SIZE; canvas.height = maze.length * TILE_SIZE; ctx.imageSmoothingEnabled = false;
+       foodRemaining = 0; dogs = []; let catStartX = 0, catStartY = 0; const dogSpawnPoints = [];
+       for (let y = 0; y < maze.length; y++) { for (let x = 0; x < maze[y].length; x++) { if (maze[y][x] === CAT_START) { catStartX = x; catStartY = y; maze[y][x] = PATH; } else if (maze[y][x] === DOG_SPAWN) { dogSpawnPoints.push({ gridX: x, gridY: y }); } else if (maze[y][x] === CAT_FOOD) { foodRemaining++; } } }
+       const speedPercentage = 0.25 + (levelIndex * 0.05); dogBaseSpeed = (CAT_BASE_SPEED / 0.7) * speedPercentage; dogSpeed = dogBaseSpeed;
+       cat = new Cat(catStartX, catStartY); cat.speed = catSpeed;
+       // *** Create dogs with unique indices for emojis ***
+       dogs = dogSpawnPoints.map((pos, i) => new Dog(pos.gridX, pos.gridY, dogSpeed, i));
+       cat.reset(); dogs.forEach(dog => dog.reset(true));
+       powerUpActive = false; if (powerUpTimer) clearTimeout(powerUpTimer); powerUpTimer = null; vulnerableEndTime = 0; currentDogPoints = POINTS_DOG_BASE; updateUI();
+   }
+
+   function resetPositionsAfterLifeLost() { /* ... unchanged ... */ cat.reset(); dogs.forEach(dog => dog.reset(false)); if (powerUpActive) { deactivatePowerUp(); } }
+   function gameLoop(timestamp) { /* ... unchanged ... */ const delta = timestamp - lastTime; lastTime = timestamp; const dt = Math.min(delta, 50); if (gameState === 'PLAYING' || gameState === 'POWERUP') { update(dt); } if (gameState !== 'MENU') { draw(); } if (gameState !== 'GAME_OVER' && gameState !== 'WIN' && gameState !== 'MENU') { gameLoopId = requestAnimationFrame(gameLoop); } else { if (gameLoopId) cancelAnimationFrame(gameLoopId); gameLoopId = null; if (gameState === 'GAME_OVER' || gameState === 'WIN') { draw(); } } }
+   function update(deltaTime) { /* ... unchanged ... */ cat.move(deltaTime); dogs.forEach(dog => dog.move(deltaTime)); checkCollisions(); checkFoodEaten(); checkPowerUpTimer(); if (foodRemaining <= 0) { goToNextLevel(); } }
+   
+       // --- Drawing Function ---
+   function draw() {
+       ctx.clearRect(0, 0, canvas.width, canvas.height);
+       ctx.fillStyle = '#000'; // Ensure background is black
+       ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+       // Set default font style for the frame (used for most elements)
+       const standardFont = `${FONT_SIZE}px Arial`;
+       ctx.font = standardFont;
+       ctx.textAlign = 'center';
+       ctx.textBaseline = 'middle';
+
+       // Assume WALL_EMOJI and POWER_UP_EMOJI are defined globally/in scope
+       // const WALL_EMOJI = '🧱';
+       // const POWER_UP_EMOJI = '🐟';
+
+       for (let y = 0; y < maze.length; y++) {
+           for (let x = 0; x < maze[y].length; x++) {
+               const tile = maze[y][x];
+               const dX = x * TILE_SIZE + TILE_SIZE / 2; // Center X for text/emoji rendering
+               const dY = y * TILE_SIZE + TILE_SIZE / 2; // Center Y for text/emoji rendering
+
+               if (tile === WALL) {
+                   // --- Start Inlined Change ---
+                   const originalFont = ctx.font; // Store the current font setting
+                   // Attempt to set a font stack prioritizing known emoji fonts
+                   ctx.font = `${FONT_SIZE}px "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", sans-serif`;
+
+                   // Draw the wall emoji using the (hopefully) overridden font
+                   ctx.fillText(WALL_EMOJI, dX, dY);
+
+                   // Restore the original font setting for other elements
+                   ctx.font = originalFont;
+                   // --- End Inlined Change ---
+
+               } else if (tile === CAT_FOOD) {
+                   // Draw food as a dot
+                   ctx.beginPath();
+                   ctx.arc(dX, dY, TILE_SIZE * 0.15, 0, Math.PI * 2);
+                   ctx.fillStyle = 'orange';
+                   ctx.fill();
+               } else if (tile === POWER_UP) {
+                   // Draw power-up emoji (will use the standardFont set before loop)
+                   ctx.fillText(POWER_UP_EMOJI, dX, dY);
+               }
+               // Other tile types (PATH, SPAWN, etc.) are not drawn visually here
+           }
+       }
+
+       // Ensure font is standard before drawing entities (might be redundant if reset correctly, but safe)
         ctx.font = standardFont;
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
 
-        // Assume WALL_EMOJI and POWER_UP_EMOJI are defined globally/in scope
-        // const WALL_EMOJI = '🧱';
-        // const POWER_UP_EMOJI = '🐟';
+       // Draw Entities
+       dogs.forEach(dog => dog.draw(ctx));
+       cat.draw(ctx);
+   }
 
-        for (let y = 0; y < maze.length; y++) {
-            for (let x = 0; x < maze[y].length; x++) {
-                const tile = maze[y][x];
-                const dX = x * TILE_SIZE + TILE_SIZE / 2; // Center X for text/emoji rendering
-                const dY = y * TILE_SIZE + TILE_SIZE / 2; // Center Y for text/emoji rendering
+   // --- Collision & Interaction Logic ---
+   function checkCollisions() { /* ... unchanged - HS check already moved */ const cX=cat.x+TILE_SIZE/2; const cY=cat.y+TILE_SIZE/2; dogs.forEach(dog=>{ if(dog.state==='returning'||dog.state==='respawning')return; const dX=dog.x+TILE_SIZE/2; const dY=dog.y+TILE_SIZE/2; const dx=cX-dX; const dy=cY-dY; const dist=Math.sqrt(dx*dx+dy*dy); const th=TILE_SIZE*0.65; if(dist<th){ if(dog.state==='vulnerable'){ score+=currentDogPoints; if(score>highScore)updateHighScore(); dog.sendToPound(); currentDogPoints*=2; updateUI();} else if(dog.state==='normal'){ if(gameState!=='CAUGHT'){ gameState='CAUGHT'; handleCaught();}} } }); }
+   function checkFoodEaten() { /* ... unchanged - HS check already moved */ const gX=Math.floor((cat.x+TILE_SIZE/2)/TILE_SIZE); const gY=Math.floor((cat.y+TILE_SIZE/2)/TILE_SIZE); if(gX<0||gX>=maze[0].length||gY<0||gY>=maze.length)return; const tile=maze[gY][gX]; if(tile===CAT_FOOD){ maze[gY][gX]=PATH; foodRemaining--; score+=POINTS_FOOD; if(score>highScore)updateHighScore(); playSound(880+(foodRemaining%5)*50,'square',0.05); updateUI();} else if(tile===POWER_UP){ maze[gY][gX]=PATH; score+=POINTS_POWERUP; if(score>highScore)updateHighScore(); activatePowerUp(); updateUI();} }
+   function activatePowerUp() { /* ... unchanged ... */ playSound(1200,'triangle',0.2); powerUpActive=true; if(gameState==='PLAYING')gameState='POWERUP'; currentDogPoints=POINTS_DOG_BASE; vulnerableEndTime=Date.now()+POWER_UP_DURATION; dogs.forEach(dog=>{ if(dog.state==='normal'){ dog.state='vulnerable'; dog.speed=dogBaseSpeed*0.6; if(dog.dx!==0||dog.dy!==0){ dog.dx=-dog.dx; dog.dy=-dog.dy; } if(dog.aiTimer)clearTimeout(dog.aiTimer); dog.aiTimer=null; dog.path=[]; dog.clearPathRecalculateTimer(); dog.recalculatePath(); dog.startPathRecalculateTimer(); } }); if(powerUpTimer)clearTimeout(powerUpTimer); powerUpTimer=setTimeout(deactivatePowerUp,POWER_UP_DURATION); }
+   function deactivatePowerUp() { /* ... unchanged ... */ powerUpActive=false; if(gameState==='POWERUP')gameState='PLAYING'; vulnerableEndTime=0; if(powerUpTimer)clearTimeout(powerUpTimer); powerUpTimer=null; dogs.forEach(dog=>{ if(dog.state==='vulnerable'){ dog.state='normal'; dog.emoji=dog.baseEmoji; /* USE BASE EMOJI */ dog.speed=dogSpeed; dog.path=[]; dog.clearPathRecalculateTimer(); dog.recalculatePath(); dog.startPathRecalculateTimer(); dog.switchAiMode(); } }); }
+   function checkPowerUpTimer() { /* ... unchanged ... */ if(powerUpActive&&Date.now()>=vulnerableEndTime){ deactivatePowerUp(); }}
+   function handleCaught() { /* ... unchanged ... */ playSound(220,'sawtooth',0.3); lives--; updateUI(); if(gameLoopId)cancelAnimationFrame(gameLoopId); gameLoopId=null; if(lives<=0){ gameOver();} else { setTimeout(()=>{ resetPositionsAfterLifeLost(); gameState='PLAYING'; lastTime=performance.now(); gameLoopId=requestAnimationFrame(gameLoop); },1000);} }
+   function goToNextLevel() { /* ... unchanged ... */ playSound(1000,'sine',0.1); setTimeout(()=>playSound(1300,'sine',0.15),120); currentLevelIndex++; if(gameLoopId)cancelAnimationFrame(gameLoopId); gameLoopId=null; if(currentLevelIndex>=MAX_LEVELS){ winGame();} else { gameState='LEVEL_TRANSITION'; transitionLevelDisplay.textContent=currentLevelIndex+1; levelTransitionOverlay.style.display='flex'; draw(); setTimeout(()=>{ levelTransitionOverlay.style.display='none'; loadLevel(currentLevelIndex); gameState='PLAYING'; lastTime=performance.now(); gameLoopId=requestAnimationFrame(gameLoop); },LEVEL_TRANSITION_DELAY);} }
 
-                if (tile === WALL) {
-                    // --- Start Inlined Change ---
-                    const originalFont = ctx.font; // Store the current font setting
-                    // Attempt to set a font stack prioritizing known emoji fonts
-                    ctx.font = `${FONT_SIZE}px "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", sans-serif`;
-
-                    // Draw the wall emoji using the (hopefully) overridden font
-                    ctx.fillText(WALL_EMOJI, dX, dY);
-
-                    // Restore the original font setting for other elements
-                    ctx.font = originalFont;
-                    // --- End Inlined Change ---
-
-                } else if (tile === CAT_FOOD) {
-                    // Draw food as a dot
-                    ctx.beginPath();
-                    ctx.arc(dX, dY, TILE_SIZE * 0.15, 0, Math.PI * 2);
-                    ctx.fillStyle = 'orange';
-                    ctx.fill();
-                } else if (tile === POWER_UP) {
-                    // Draw power-up emoji (will use the standardFont set before loop)
-                    ctx.fillText(POWER_UP_EMOJI, dX, dY);
-                }
-                // Other tile types (PATH, SPAWN, etc.) are not drawn visually here
-            }
-        }
-
-        // Ensure font is standard before drawing entities (might be redundant if reset correctly, but safe)
-         ctx.font = standardFont;
-
-        // Draw Entities
-        dogs.forEach(dog => dog.draw(ctx));
-        cat.draw(ctx);
-    }
-
-    // --- Collision & Interaction Logic ---
-    function checkCollisions() { /* ... unchanged - HS check already moved */ const cX=cat.x+TILE_SIZE/2; const cY=cat.y+TILE_SIZE/2; dogs.forEach(dog=>{ if(dog.state==='returning'||dog.state==='respawning')return; const dX=dog.x+TILE_SIZE/2; const dY=dog.y+TILE_SIZE/2; const dx=cX-dX; const dy=cY-dY; const dist=Math.sqrt(dx*dx+dy*dy); const th=TILE_SIZE*0.65; if(dist<th){ if(dog.state==='vulnerable'){ score+=currentDogPoints; if(score>highScore)updateHighScore(); dog.sendToPound(); currentDogPoints*=2; updateUI();} else if(dog.state==='normal'){ if(gameState!=='CAUGHT'){ gameState='CAUGHT'; handleCaught();}} } }); }
-    function checkFoodEaten() { /* ... unchanged - HS check already moved */ const gX=Math.floor((cat.x+TILE_SIZE/2)/TILE_SIZE); const gY=Math.floor((cat.y+TILE_SIZE/2)/TILE_SIZE); if(gX<0||gX>=maze[0].length||gY<0||gY>=maze.length)return; const tile=maze[gY][gX]; if(tile===CAT_FOOD){ maze[gY][gX]=PATH; foodRemaining--; score+=POINTS_FOOD; if(score>highScore)updateHighScore(); playSound(880+(foodRemaining%5)*50,'square',0.05); updateUI();} else if(tile===POWER_UP){ maze[gY][gX]=PATH; score+=POINTS_POWERUP; if(score>highScore)updateHighScore(); activatePowerUp(); updateUI();} }
-    function activatePowerUp() { /* ... unchanged ... */ playSound(1200,'triangle',0.2); powerUpActive=true; if(gameState==='PLAYING')gameState='POWERUP'; currentDogPoints=POINTS_DOG_BASE; vulnerableEndTime=Date.now()+POWER_UP_DURATION; dogs.forEach(dog=>{ if(dog.state==='normal'){ dog.state='vulnerable'; dog.speed=dogBaseSpeed*0.6; if(dog.dx!==0||dog.dy!==0){ dog.dx=-dog.dx; dog.dy=-dog.dy; } if(dog.aiTimer)clearTimeout(dog.aiTimer); dog.aiTimer=null; dog.path=[]; dog.clearPathRecalculateTimer(); dog.recalculatePath(); dog.startPathRecalculateTimer(); } }); if(powerUpTimer)clearTimeout(powerUpTimer); powerUpTimer=setTimeout(deactivatePowerUp,POWER_UP_DURATION); }
-    function deactivatePowerUp() { /* ... unchanged ... */ powerUpActive=false; if(gameState==='POWERUP')gameState='PLAYING'; vulnerableEndTime=0; if(powerUpTimer)clearTimeout(powerUpTimer); powerUpTimer=null; dogs.forEach(dog=>{ if(dog.state==='vulnerable'){ dog.state='normal'; dog.emoji=dog.baseEmoji; /* USE BASE EMOJI */ dog.speed=dogSpeed; dog.path=[]; dog.clearPathRecalculateTimer(); dog.recalculatePath(); dog.startPathRecalculateTimer(); dog.switchAiMode(); } }); }
-    function checkPowerUpTimer() { /* ... unchanged ... */ if(powerUpActive&&Date.now()>=vulnerableEndTime){ deactivatePowerUp(); }}
-    function handleCaught() { /* ... unchanged ... */ playSound(220,'sawtooth',0.3); lives--; updateUI(); if(gameLoopId)cancelAnimationFrame(gameLoopId); gameLoopId=null; if(lives<=0){ gameOver();} else { setTimeout(()=>{ resetPositionsAfterLifeLost(); gameState='PLAYING'; lastTime=performance.now(); gameLoopId=requestAnimationFrame(gameLoop); },1000);} }
-    function goToNextLevel() { /* ... unchanged ... */ playSound(1000,'sine',0.1); setTimeout(()=>playSound(1300,'sine',0.15),120); currentLevelIndex++; if(gameLoopId)cancelAnimationFrame(gameLoopId); gameLoopId=null; if(currentLevelIndex>=MAX_LEVELS){ winGame();} else { gameState='LEVEL_TRANSITION'; transitionLevelDisplay.textContent=currentLevelIndex+1; levelTransitionOverlay.style.display='flex'; draw(); setTimeout(()=>{ levelTransitionOverlay.style.display='none'; loadLevel(currentLevelIndex); gameState='PLAYING'; lastTime=performance.now(); gameLoopId=requestAnimationFrame(gameLoop); },LEVEL_TRANSITION_DELAY);} }
 
     // --- UI Updates & State Management ---
     function updateHighScore() { /* ... unchanged ... */ highScore=score; localStorage.setItem('catVsDogsHighScore',highScore.toString()); highScoreDisplay.textContent=highScore; menuHighScoreDisplay.textContent=highScore; highScoreGameOverDisplay.textContent=highScore; highScoreWinDisplay.textContent=highScore; playSound(1600,'sine',0.15); }
-    function gameOver() { /* ... unchanged ... */ playSound(200,'sawtooth',0.5); gameState='GAME_OVER'; if(gameLoopId)cancelAnimationFrame(gameLoopId); gameLoopId=null; exitButton.style.display='none'; /* Already called updateHighScore if needed */ finalScoreGameOverDisplay.textContent=score; gameOverOverlay.style.display='flex'; draw(); }
-    function winGame() { /* ... unchanged ... */ playSound(1400,'triangle',0.2); setTimeout(()=>playSound(1800,'triangle',0.3),250); gameState='WIN'; if(gameLoopId)cancelAnimationFrame(gameLoopId); gameLoopId=null; exitButton.style.display='none'; /* Already called updateHighScore if needed */ finalScoreWinDisplay.textContent=score; winScreenOverlay.style.display='flex'; draw(); }
+    function gameOver() {
+        playSound(200, 'sawtooth', 0.5); gameState = 'GAME_OVER'; if (gameLoopId) cancelAnimationFrame(gameLoopId); gameLoopId = null;
+        exitButton.style.display = 'none';
+        mobileControlsContainer.style.display = 'none'; // Hide controls
+        finalScoreGameOverDisplay.textContent = score; gameOverOverlay.style.display = 'flex'; draw();
+    }
+    function winGame() {
+        playSound(1400, 'triangle', 0.2); setTimeout(() => playSound(1800, 'triangle', 0.3), 250); gameState = 'WIN'; if (gameLoopId) cancelAnimationFrame(gameLoopId); gameLoopId = null;
+        exitButton.style.display = 'none';
+        mobileControlsContainer.style.display = 'none'; // Hide controls
+        finalScoreWinDisplay.textContent = score; winScreenOverlay.style.display = 'flex'; draw();
+    }
     function updateUI() { /* ... unchanged ... */ levelDisplay.textContent=currentLevelIndex+1; scoreDisplay.textContent=score; highScoreDisplay.textContent=highScore; livesDisplay.textContent=LIFE_EMOJI.repeat(Math.max(0,lives)); }
-    function showMenu() { /* ... unchanged ... */ gameState='MENU'; if(gameLoopId)cancelAnimationFrame(gameLoopId); gameLoopId=null; exitButton.style.display='none'; highScore=parseInt(localStorage.getItem('catVsDogsHighScore')||'0'); menuHighScoreDisplay.textContent=highScore; soundToggle.checked=isSoundEnabled; /* Update checkbox */ menuOverlay.style.display='flex'; gameOverOverlay.style.display='none'; winScreenOverlay.style.display='none'; levelTransitionOverlay.style.display='none'; const tW=19*TILE_SIZE; const tH=17*TILE_SIZE; canvas.width=tW; canvas.height=tH; ctx.clearRect(0,0,canvas.width,canvas.height); ctx.fillStyle='black'; ctx.fillRect(0,0,canvas.width,canvas.height); ctx.font=`${Math.floor(TILE_SIZE*1.5)}px 'Courier New', Courier, monospace`; ctx.fillStyle='orange'; ctx.textAlign='center'; ctx.fillText('Cat vs Dogs!',canvas.width/2,canvas.height/3); ctx.font=`${Math.floor(TILE_SIZE*0.8)}px 'Courier New', Courier, monospace`; ctx.fillStyle='white'; ctx.fillText('Press Start or Enter',canvas.width/2,canvas.height/2); ctx.fillText(`High Score: ${highScore}`,canvas.width/2,canvas.height*0.65); }
-    function startGame() { /* ... unchanged ... */ if(!audioCtx){ try{ audioCtx=new(window.AudioContext||window.webkitAudioContext)(); if(audioCtx.state==='suspended')audioCtx.resume(); } catch(e){ console.error("Web Audio API not supported",e); }} else if(audioCtx.state==='suspended')audioCtx.resume(); playSound(660,'sine',0.1); menuOverlay.style.display='none'; gameOverOverlay.style.display='none'; winScreenOverlay.style.display='none'; exitButton.style.display='inline-block'; currentLevelIndex=0; score=0; lives=STARTING_LIVES; loadLevel(currentLevelIndex); /* highScore updated on load/score */ updateUI(); gameState='PLAYING'; setTimeout(()=>{ lastTime=performance.now(); if(gameLoopId)cancelAnimationFrame(gameLoopId); gameLoopId=requestAnimationFrame(gameLoop); },100); }
+    
+    // *** UPDATED showMenu for Mobile ***
+    function showMenu() {
+        gameState = 'MENU'; if (gameLoopId) cancelAnimationFrame(gameLoopId); gameLoopId = null;
+        exitButton.style.display = 'none';
+        mobileControlsContainer.style.display = 'none'; // Hide controls
+        highScore = parseInt(localStorage.getItem('catVsDogsHighScore') || '0'); menuHighScoreDisplay.textContent = highScore; soundToggle.checked = isSoundEnabled; menuOverlay.style.display = 'flex'; gameOverOverlay.style.display = 'none'; winScreenOverlay.style.display = 'none'; levelTransitionOverlay.style.display = 'none';
+        // Draw title screen...
+        const tW = 19 * TILE_SIZE; const tH = 17 * TILE_SIZE; canvas.width = tW; canvas.height = tH; ctx.clearRect(0, 0, canvas.width, canvas.height); ctx.fillStyle = 'black'; ctx.fillRect(0, 0, canvas.width, canvas.height); ctx.font = `${Math.floor(TILE_SIZE * 1.5)}px 'Courier New', Courier, monospace`; ctx.fillStyle = 'orange'; ctx.textAlign = 'center'; ctx.fillText('Cat vs Dogs!', canvas.width / 2, canvas.height / 3); ctx.font = `${Math.floor(TILE_SIZE * 0.8)}px 'Courier New', Courier, monospace`; ctx.fillStyle = 'white';
+        ctx.fillText('Tap Start', canvas.width / 2, canvas.height / 2); // Mobile specific text
+        ctx.fillText(`High Score: ${highScore}`, canvas.width / 2, canvas.height * 0.65);
+    }
+
+    // *** UPDATED startGame for Mobile ***
+    function startGame() {
+        // Init Audio Context
+        if (!audioCtx) { try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); if (audioCtx.state === 'suspended') audioCtx.resume(); } catch (e) { console.error("Web Audio API not supported", e); } } else if (audioCtx.state === 'suspended') audioCtx.resume();
+        playSound(660, 'sine', 0.1);
+
+        // Hide overlays
+        menuOverlay.style.display = 'none'; gameOverOverlay.style.display = 'none'; winScreenOverlay.style.display = 'none';
+
+        // Show gameplay UI
+        exitButton.style.display = 'inline-block';
+        mobileControlsContainer.style.display = 'grid'; // <-- ALWAYS show controls on start
+
+        // --- ALWAYS Request Fullscreen on Start ---
+        requestGameFullscreen();
+
+        // Load game data
+        currentLevelIndex = 0; score = 0; lives = STARTING_LIVES;
+        loadLevel(currentLevelIndex);
+        updateUI();
+        gameState = 'PLAYING';
+
+        // Start game loop
+        setTimeout(() => { lastTime = performance.now(); if (gameLoopId) cancelAnimationFrame(gameLoopId); gameLoopId = requestAnimationFrame(gameLoop); }, 100);
+    }
 
     // --- Event Listeners ---
-    startButton.addEventListener('click', startGame);
+    startButton.addEventListener('click', startGame); // Use click for mobile taps too
     restartButtonGameOver.addEventListener('click', showMenu);
     playAgainButton.addEventListener('click', showMenu);
-    exitButton.addEventListener('click', () => { playSound(440, 'sine', 0.08); showMenu(); });
-    // *** Sound Toggle Listener ***
-    soundToggle.addEventListener('change', () => {
-        isSoundEnabled = soundToggle.checked;
-        localStorage.setItem('catVsDogsSoundEnabled', isSoundEnabled);
-        // Optional: Play a small sound to confirm change
-        playSound(isSoundEnabled ? 880 : 440, 'sine', 0.05);
+    exitButton.addEventListener('click', () => {
+        playSound(440, 'sine', 0.08);
+        
+        if (document.fullscreenElement || document.webkitFullscreenElement) {
+            if (document.exitFullscreen) document.exitFullscreen();
+            else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+        }
+        showMenu();
     });
-    window.addEventListener('keydown', (e) => { /* ... unchanged ... */ if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key))e.preventDefault(); if(gameState==='PLAYING'||gameState==='POWERUP'){ cat.handleInput(e.key); } else if(gameState==='MENU'&&(e.key==='Enter'||e.key===' ')){ e.preventDefault(); startGame(); } else if((gameState==='GAME_OVER'||gameState==='WIN')&&(e.key==='Enter'||e.key===' ')){ e.preventDefault(); showMenu(); } });
+    soundToggle.addEventListener('change', () => { /* ... unchanged ... */ isSoundEnabled = soundToggle.checked; localStorage.setItem('catVsDogsSoundEnabled', isSoundEnabled); playSound(isSoundEnabled ? 880 : 440, 'sine', 0.05); });
+
+    // --- Mobile Control Touch Listeners ---
+    const handleTouchStart = (e, key) => {
+        e.preventDefault(); // IMPORTANT: Prevent scroll/zoom/etc.
+        if (cat && (gameState === 'PLAYING' || gameState === 'POWERUP')) {
+            cat.handleInput(key);
+        }
+    };
+
+    // Use touchstart for primary mobile interaction
+    btnUp.addEventListener('touchstart', (e) => handleTouchStart(e, 'ArrowUp'), { passive: false });
+    btnDown.addEventListener('touchstart', (e) => handleTouchStart(e, 'ArrowDown'), { passive: false });
+    btnLeft.addEventListener('touchstart', (e) => handleTouchStart(e, 'ArrowLeft'), { passive: false });
+    btnRight.addEventListener('touchstart', (e) => handleTouchStart(e, 'ArrowRight'), { passive: false });
+
+    // Keep mousedown for potential desktop testing / hybrid devices
+    btnUp.addEventListener('mousedown', (e) => handleTouchStart(e, 'ArrowUp'));
+    btnDown.addEventListener('mousedown', (e) => handleTouchStart(e, 'ArrowDown'));
+    btnLeft.addEventListener('mousedown', (e) => handleTouchStart(e, 'ArrowLeft'));
+    btnRight.addEventListener('mousedown', (e) => handleTouchStart(e, 'ArrowRight'));
+
 
     // --- Initial Call ---
     initGame();
