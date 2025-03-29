@@ -1,0 +1,188 @@
+body {
+    font-family: sans-serif;
+    margin: 20px;
+    background-color: #f4f4f4;
+}
+
+h1, h2 {
+    text-align: center;
+    color: #333;
+}
+
+.editor-container {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap; /* Allow wrapping on smaller screens */
+}
+
+.left-panel {
+    flex: 1;
+    min-width: 200px; /* Ensure panel has minimum width */
+    background-color: #fff;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.main-panel {
+    flex: 3;
+    min-width: 400px; /* Ensure panel has minimum width */
+    display: flex;
+    flex-direction: column;
+}
+
+/* Palette Styles */
+#palette {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 20px;
+    justify-content: center;
+}
+
+.palette-item {
+    border: 2px solid #ccc;
+    padding: 8px 10px;
+    cursor: pointer;
+    border-radius: 5px;
+    font-size: 1.5em; /* Make emojis larger */
+    min-width: 50px;
+    text-align: center;
+    background-color: #eee;
+    transition: background-color 0.2s, border-color 0.2s;
+    user-select: none; /* Prevent text selection */
+}
+
+.palette-item:hover {
+    background-color: #ddd;
+}
+
+.palette-item.selected {
+    border-color: #007bff;
+    background-color: #cce5ff;
+    font-weight: bold;
+}
+
+.palette-item span {
+    font-size: 0.6em; /* Smaller text label */
+    display: block;
+    margin-top: 4px;
+    color: #555;
+}
+
+
+/* Control Styles */
+#controls {
+    display: flex;
+    flex-direction: column;
+    gap: 15px; /* Increased gap */
+    margin-bottom: 20px;
+}
+
+.control-item {
+    display: flex; /* Arrange label and control side-by-side or stacked */
+    flex-direction: column; /* Stack label above control */
+    gap: 5px;
+}
+
+.control-item label {
+    font-weight: bold;
+    color: #555;
+    font-size: 0.9em;
+}
+
+#controls select,
+#controls button {
+    padding: 10px 15px;
+    cursor: pointer;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 1em;
+    box-sizing: border-box; /* Include padding/border in width */
+    width: 100%; /* Make controls fill container */
+}
+
+#controls button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    transition: background-color 0.2s;
+}
+
+#controls button:hover {
+    background-color: #0056b3;
+}
+
+#controls button:active {
+    background-color: #004085;
+}
+
+#controls select {
+    background-color: #fff;
+}
+
+/* Instructions */
+.instructions {
+    font-size: 0.9em;
+    color: #555;
+    background-color: #eef;
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #dde;
+    margin-top: 10px; /* Add some space above instructions */
+}
+.instructions ol {
+    margin-left: 20px;
+    padding-left: 15px;
+}
+.instructions li {
+    margin-bottom: 5px;
+}
+
+
+/* Grid Styles */
+#grid-container {
+    display: grid; /* Use CSS Grid */
+    border: 1px solid #999;
+    margin-bottom: 20px;
+    background-color: #fff;
+    min-height: 50px;
+    min-width: 50px;
+    align-content: start;
+    justify-content: start;
+    overflow: auto;
+    max-width: 100%;
+}
+
+.grid-cell {
+    border: 1px solid #eee;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.4em;
+    cursor: pointer;
+    background-color: #f9f9f9;
+    user-select: none;
+    transition: background-color 0.1s;
+}
+
+.grid-cell:hover {
+    background-color: #e0e0e0;
+}
+
+
+/* Input/Output Area Styles */
+#data-io {
+    width: calc(100% - 22px); /* Account for padding/border */
+    font-family: monospace;
+    font-size: 0.9em;
+    border: 1px solid #ccc;
+    padding: 10px;
+    border-radius: 5px;
+    box-sizing: border-box;
+    resize: vertical;
+    background-color: #e9ecef; /* Slightly greyed out as it's output/readonly */
+    color: #495057;
+}
